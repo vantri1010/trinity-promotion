@@ -64,7 +64,6 @@ func initDB(env *config.Env) (*mongo.Database, error) {
 	}
 
 	db := dbClient.Database(env.DBName)
-	defer database.CloseMongoDBConnection(dbClient)
 
 	// Setup indexes
 	err = database.SetupIndexes(db)
