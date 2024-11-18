@@ -1,5 +1,5 @@
 # Variables
-CMD_DIR := cmd/server
+CMD_DIR := cmd
 APP_NAME := trinity
 SCRIPT_DIR := scripts
 

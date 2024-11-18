@@ -3,12 +3,12 @@ package campaign
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"trinity/modules/model"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"trinity/mongo"
 )
 
 // Repository defines campaign data access methods
@@ -21,11 +21,11 @@ type Repository interface {
 
 // repository implements Repository interface
 type repository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 // NewRepository creates a new Campaign repository
-func NewRepository(db *mongo.Database) Repository {
+func NewRepository(db mongo.Database) Repository {
 	return &repository{
 		collection: db.Collection("campaigns"),
 	}
@@ -38,7 +38,7 @@ func (r *repository) CreateCampaign(campaign *model.Campaign) (string, error) {
 		return "", err
 	}
 
-	oid, ok := result.InsertedID.(primitive.ObjectID)
+	oid, ok := result.(primitive.ObjectID)
 	if !ok {
 		return "", fmt.Errorf("failed to convert to ObjectID")
 	}
@@ -56,14 +56,8 @@ func (r *repository) GetCampaignByID(campaignID string) (*model.Campaign, error)
 
 	var campaign model.Campaign
 	err = r.collection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&campaign)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("no documents in result")
-		}
-		return nil, err
-	}
 
-	return &campaign, nil
+	return &campaign, err
 }
 
 // IncrementUsedUsers increments the used_users field of a campaign by a specified count
@@ -100,16 +94,11 @@ func (r *repository) ListCampaigns() ([]model.Campaign, error) {
 	defer cursor.Close(context.Background())
 
 	var campaigns []model.Campaign
-	for cursor.Next(context.Background()) {
-		var campaign model.Campaign
-		if err := cursor.Decode(&campaign); err != nil {
-			return nil, err
-		}
-		campaigns = append(campaigns, campaign)
-	}
 
-	if err := cursor.Err(); err != nil {
-		return nil, err
+	err = cursor.All(context.Background(), &campaigns)
+
+	if err != nil {
+		return []model.Campaign{}, err
 	}
 
 	return campaigns, nil

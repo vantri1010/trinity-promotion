@@ -5,7 +5,7 @@ import (
 
 	"trinity/modules/model"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"trinity/mongo"
 )
 
 // Repository defines purchase data access methods
@@ -15,11 +15,11 @@ type Repository interface {
 
 // repository implements Repository interface
 type repository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
 // NewRepository creates a new Purchase repository
-func NewRepository(db *mongo.Database) Repository {
+func NewRepository(db mongo.Database) Repository {
 	return &repository{
 		collection: db.Collection("purchases"),
 	}

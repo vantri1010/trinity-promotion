@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 	"trinity/modules/model"
 	"trinity/utils/logger"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"trinity/mongo"
 )
 
 // Repository defines voucher data access methods
@@ -22,12 +22,12 @@ type Repository interface {
 
 // repository implements Repository interface
 type repository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 	logger     logger.Logger
 }
 
 // NewRepository creates a new Voucher repository
-func NewRepository(db *mongo.Database) Repository {
+func NewRepository(db mongo.Database) Repository {
 	return &repository{
 		collection: db.Collection("vouchers"),
 		logger:     logger.NewLogger("voucherRepository"),
@@ -42,7 +42,7 @@ func (r *repository) CreateVoucher(voucher *model.Voucher) error {
 		return err
 	}
 
-	oid, ok := result.InsertedID.(primitive.ObjectID)
+	oid, ok := result.(primitive.ObjectID)
 	if !ok {
 		r.logger.Errorf("InsertedID is not an ObjectID")
 		return fmt.Errorf("failed to convert InsertedID to ObjectID")

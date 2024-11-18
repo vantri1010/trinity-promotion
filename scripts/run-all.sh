@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variables
-CMD_DIR="cmd/server"
+CMD_DIR="cmd"
 APP_NAME="trinity"
 
 # Step 1: Install dependencies

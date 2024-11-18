@@ -4,7 +4,7 @@ import (
 	"context"
 	"trinity/modules/model"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"trinity/mongo"
 )
 
 type Repository interface {
@@ -13,10 +13,10 @@ type Repository interface {
 }
 
 type repository struct {
-	collection *mongo.Collection
+	collection mongo.Collection
 }
 
-func NewRepository(db *mongo.Database) Repository {
+func NewRepository(db mongo.Database) Repository {
 	return &repository{
 		collection: db.Collection("subscriptions"),
 	}
