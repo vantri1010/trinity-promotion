@@ -36,7 +36,8 @@ swag:
 
 # Run all steps using the script
 run-all:
-	chmod +x $(SCRIPT_DIR)/run-all.sh
+	# Turn this line on when use linux:
+	#chmod +x $(SCRIPT_DIR)/run-all.sh
 	bash $(SCRIPT_DIR)/run-all.sh
 
 # Show this help message
