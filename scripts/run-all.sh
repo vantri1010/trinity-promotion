@@ -1,23 +1,42 @@
 #!/bin/bash
 
-# Variables
-CMD_DIR="cmd"
-APP_NAME="trinity"
+# Define the output binary path (current directory or project root)
+OUTPUT_BINARY="./trinity"
 
-# Step 1: Install dependencies
-log_info "Step 1: Installing Go module dependencies..."
-go install github.com/swaggo/swag/cmd/swag@latest
-go mod tidy
+# Step 1: Check if `swag` is installed and install if necessary
+if ! command -v swag &> /dev/null; then
+    echo "swag not found. Installing..."
+    go install github.com/swaggo/swag/cmd/swag@latest || { 
+        echo "Failed to install swag"; exit 1; 
+    }
+else
+    echo "swag is already installed."
+fi
+
+# Step 2: Install dependencies
+echo "Running go mod tidy..."
+go mod tidy || { 
+    echo "Failed to tidy Go modules"; exit 1; 
+}
 
 # Step 3: Build the application
-log_info "Step 3: Building the application..."
-cd $CMD_DIR && go build -o $APP_NAME
-cd / # Go back to the root directory
+echo "Building the application..."
+if ! go build -o "$OUTPUT_BINARY" cmd/main.go; then
+    echo "Failed to build the application."
+    exit 1
+fi
 
 # Step 4: Generate Swagger documentation
-log_info "Step 4: Generating Swagger documentation..."
-swag init -g $CMD_DIR/main.go -o ./docs
+echo "Generating Swagger documentation..."
+if ! swag init -g cmd/main.go -o docs; then
+    echo "Failed to generate Swagger documentation."
+    exit 1
+fi
 
 # Step 5: Run the built application
-log_info "Step 6: Running the built application..."
-cd $CMD_DIR && ./$APP_NAME
+echo "Running the built application..."
+if ! "$OUTPUT_BINARY"; then
+    echo "Failed to run the application."
+    exit 1
+fi
+
